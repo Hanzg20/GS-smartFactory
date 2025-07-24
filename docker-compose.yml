@@ -1,0 +1,116 @@
+version: '3.8'
+
+services:
+  # 前端服务
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - VITE_BACKEND_URL=http://backend:3001
+      - VITE_OPC_UA_URL=opc.tcp://localhost:4840
+    volumes:
+      - /app/node_modules
+    depends_on:
+      - backend
+    networks:
+      - industrial-network
+
+  # 后端服务
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+      - FRONTEND_URL=http://localhost:3000
+      - ADS_TARGET_IP=${ADS_TARGET_IP:-192.168.1.10}
+      - ADS_TARGET_PORT=${ADS_TARGET_PORT:-851}
+      - ADS_SOURCE_IP=${ADS_SOURCE_IP:-192.168.1.100}
+      - ADS_SOURCE_PORT=${ADS_SOURCE_PORT:-852}
+      - OPCUA_ENDPOINT_URL=${OPCUA_ENDPOINT_URL:-opc.tcp://localhost:4840}
+      - OPCUA_SECURITY_MODE=${OPCUA_SECURITY_MODE:-None}
+      - OPCUA_SECURITY_POLICY=${OPCUA_SECURITY_POLICY:-None}
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+      - ./logs:/app/logs
+    networks:
+      - industrial-network
+
+  # OPC UA服务器 (可选)
+  opcua-server:
+    image: open62541/open62541:latest
+    ports:
+      - "4840:4840"
+    environment:
+      - UA_ENDPOINT_URL=opc.tcp://0.0.0.0:4840
+    volumes:
+      - ./opcua-config:/config
+    networks:
+      - industrial-network
+    profiles:
+      - opcua
+
+  # Node-RED (可选)
+  nodered:
+    image: nodered/node-red:latest
+    ports:
+      - "1880:1880"
+    environment:
+      - NODE_ENV=production
+    volumes:
+      - nodered-data:/data
+    networks:
+      - industrial-network
+    profiles:
+      - nodered
+
+  # InfluxDB (时序数据库，可选)
+  influxdb:
+    image: influxdb:2.7
+    ports:
+      - "8086:8086"
+    environment:
+      - DOCKER_INFLUXDB_INIT_MODE=setup
+      - DOCKER_INFLUXDB_INIT_USERNAME=admin
+      - DOCKER_INFLUXDB_INIT_PASSWORD=adminpassword
+      - DOCKER_INFLUXDB_INIT_ORG=goldsky
+      - DOCKER_INFLUXDB_INIT_BUCKET=industrial_data
+    volumes:
+      - influxdb-data:/var/lib/influxdb2
+    networks:
+      - industrial-network
+    profiles:
+      - monitoring
+
+  # Grafana (监控面板，可选)
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3002:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./grafana-config:/etc/grafana/provisioning
+    networks:
+      - industrial-network
+    depends_on:
+      - influxdb
+    profiles:
+      - monitoring
+
+volumes:
+  nodered-data:
+  influxdb-data:
+  grafana-data:
+
+networks:
+  industrial-network:
+    driver: bridge 
