@@ -1,15 +1,16 @@
 import React from 'react';
 import { useBreakpoint, Breakpoint } from '../../hooks/useBreakpoint';
-import { BaseProps } from '../../types/common';
 
-interface ResponsiveContainerProps extends BaseProps {
+interface ResponsiveContainerProps {
   children: React.ReactNode;
   hideOn?: Breakpoint[];
   showOn?: Breakpoint[];
   as?: keyof JSX.IntrinsicElements;
-  maxWidth?: Breakpoint;
+  maxWidth?: Breakpoint | '2xl';
   padding?: boolean;
   center?: boolean;
+  className?: string;
+  style?: React.CSSProperties;
 }
 
 export const ResponsiveContainer: React.FC<ResponsiveContainerProps> = ({
@@ -21,6 +22,7 @@ export const ResponsiveContainer: React.FC<ResponsiveContainerProps> = ({
   padding = true,
   center = true,
   className = '',
+  style,
   ...props
 }) => {
   const { breakpoint } = useBreakpoint();
@@ -58,14 +60,14 @@ export const ResponsiveContainer: React.FC<ResponsiveContainerProps> = ({
     .join(' ');
 
   return (
-    <Component className={containerClasses} {...props}>
+    <Component className={containerClasses} style={style} {...props}>
       {children}
     </Component>
   );
 };
 
 // 响应式网格组件
-interface ResponsiveGridProps extends BaseProps {
+interface ResponsiveGridProps {
   children: React.ReactNode;
   cols?: {
     xs?: number;
@@ -78,6 +80,8 @@ interface ResponsiveGridProps extends BaseProps {
   gap?: number;
   rowGap?: number;
   colGap?: number;
+  className?: string;
+  style?: React.CSSProperties;
 }
 
 export const ResponsiveGrid: React.FC<ResponsiveGridProps> = ({
@@ -94,6 +98,7 @@ export const ResponsiveGrid: React.FC<ResponsiveGridProps> = ({
   rowGap,
   colGap,
   className = '',
+  style,
   ...props
 }) => {
   // 构建网格列类名
@@ -120,14 +125,14 @@ export const ResponsiveGrid: React.FC<ResponsiveGridProps> = ({
   ].join(' ');
 
   return (
-    <div className={gridClasses} {...props}>
+    <div className={gridClasses} style={style} {...props}>
       {children}
     </div>
   );
 };
 
 // 响应式堆栈组件
-interface ResponsiveStackProps extends BaseProps {
+interface ResponsiveStackProps {
   children: React.ReactNode;
   direction?: {
     xs?: 'row' | 'column';
@@ -141,6 +146,8 @@ interface ResponsiveStackProps extends BaseProps {
   align?: 'start' | 'center' | 'end' | 'stretch';
   justify?: 'start' | 'center' | 'end' | 'between' | 'around';
   wrap?: boolean;
+  className?: string;
+  style?: React.CSSProperties;
 }
 
 export const ResponsiveStack: React.FC<ResponsiveStackProps> = ({
@@ -154,6 +161,7 @@ export const ResponsiveStack: React.FC<ResponsiveStackProps> = ({
   justify = 'start',
   wrap = false,
   className = '',
+  style,
   ...props
 }) => {
   // 构建方向类名
@@ -184,7 +192,7 @@ export const ResponsiveStack: React.FC<ResponsiveStackProps> = ({
     .join(' ');
 
   return (
-    <div className={stackClasses} {...props}>
+    <div className={stackClasses} style={style} {...props}>
       {children}
     </div>
   );

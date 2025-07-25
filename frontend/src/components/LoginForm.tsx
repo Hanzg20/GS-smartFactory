@@ -13,6 +13,7 @@ export const LoginForm: React.FC = () => {
   const { user, signIn } = useAuthStore()
 
   React.useEffect(() => {
+    // 如果已经登录，直接跳转
     if (user) {
       navigate('/', { replace: true })
     }
@@ -28,9 +29,17 @@ export const LoginForm: React.FC = () => {
 
     setLoading(true)
     try {
-      await signIn(email, password)
+      const result = await signIn(email, password)
+      if (result?.error) {
+        throw new Error(result.error)
+      }
       toast.success('登录成功！')
+      // 登录成功后等待状态更新
+      setTimeout(() => {
+        navigate('/', { replace: true })
+      }, 100)
     } catch (error: any) {
+      console.error('登录错误:', error)
       toast.error(error.message || '登录失败，请检查邮箱和密码')
     } finally {
       setLoading(false)

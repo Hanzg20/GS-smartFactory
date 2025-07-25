@@ -1,4 +1,4 @@
-import { supabase } from '../config/database.js'
+import supabase from '../config/database.js'
 
 // 获取综合报表数据
 export const getComprehensiveReport = async (req, res) => {

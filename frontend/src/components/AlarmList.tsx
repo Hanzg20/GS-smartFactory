@@ -16,7 +16,7 @@ interface Alarm {
 
 const ITEM_HEIGHT = 80; // 每个告警项的固定高度
 
-export const AlarmList: React.FC = () => {
+const AlarmList: React.FC = () => {
   const [alarms, setAlarms] = useState<Alarm[]>([]);
   const [filter, setFilter] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
@@ -148,4 +148,6 @@ export const AlarmList: React.FC = () => {
       />
     </div>
   );
-}; 
+};
+
+export default AlarmList; 

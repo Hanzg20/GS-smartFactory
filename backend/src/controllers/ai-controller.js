@@ -1,4 +1,4 @@
-import { supabase } from '../config/database.js'
+import supabase from '../config/database.js'
 import { io } from '../index.js'
 
 // 获取设备健康度分析

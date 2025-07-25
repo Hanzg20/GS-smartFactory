@@ -1,11 +1,12 @@
 import React from 'react';
+import { ResponsiveContainer } from './base/ResponsiveContainer';
 import AlarmList from './AlarmList';
 
 const AlarmPage: React.FC = () => {
   return (
-    <div className="p-6">
+    <ResponsiveContainer maxWidth="2xl" className="p-6">
       <AlarmList />
-    </div>
+    </ResponsiveContainer>
   );
 };
 

@@ -1,58 +1,22 @@
 import React, { useState, useEffect } from 'react';
-import { io, Socket } from 'socket.io-client';
+import socket from '../lib/socket';
 import WorkshopFloorPlan from './WorkshopFloorPlan';
 import { Workshop3DView } from './Workshop3DView';
 import DeviceDetail from './DeviceDetail';
 import { supabase } from '../lib/supabase';
 import toast from 'react-hot-toast';
-
-interface Device {
-  id: string;
-  name: string;
-  model: string;
-  type: 'CNC' | 'Robot' | 'Conveyor' | 'Inspection';
-  axes: number;
-  position: {
-    x: number;
-    y: number;
-    rotation: number;
-  };
-  image?: string;
-  status?: DeviceStatus;
-  parameters?: any;
-}
-
-interface DeviceStatus {
-  online: boolean;
-  running: boolean;
-  alarm: boolean;
-  maintenance: boolean;
-  efficiency: number;
-  temperature: number;
-  vibration: number;
-}
-
-interface Workshop {
-  id: string;
-  name: string;
-  description: string;
-  floorPlan: string;
-  width: number;
-  height: number;
-  devices: Device[];
-}
+import { Device, Workshop, DeviceStatus } from '../types/common';
 
 const FactoryOverview: React.FC = () => {
   console.log('FactoryOverview component loaded!');
   
   const [workshops, setWorkshops] = useState<Workshop[]>([]);
   const [selectedWorkshop, setSelectedWorkshop] = useState<string>('');
-  const [socket, setSocket] = useState<Socket | null>(null);
   const [activeTab, setActiveTab] = useState<'floor' | '3d' | 'list'>('floor');
   const [selectedDevice, setSelectedDevice] = useState<Device | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [socketConnected, setSocketConnected] = useState(false);
+  const [socketConnected, setSocketConnected] = useState(socket.connected);
 
   useEffect(() => {
     // 从Supabase加载车间数据
@@ -88,36 +52,44 @@ const FactoryOverview: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    // 连接WebSocket
-    const newSocket = io('http://localhost:3001', {
-      reconnectionAttempts: 3,
-      timeout: 5000,
-    });
-
-    newSocket.on('connect', () => {
+    // Socket.io 事件处理
+    const onConnect = () => {
       console.log('Socket connected!');
       setSocketConnected(true);
       toast.success('实时数据连接成功');
-    });
+    };
 
-    newSocket.on('connect_error', (err) => {
-      console.error('Socket connection error:', err);
-      setSocketConnected(false);
-      toast.error('实时数据连接失败，请检查网络');
-    });
-
-    newSocket.on('disconnect', () => {
+    const onDisconnect = () => {
       console.log('Socket disconnected!');
       setSocketConnected(false);
       toast.error('实时数据连接断开');
-    });
+    };
 
-    setSocket(newSocket);
+    const onConnectError = (err: Error) => {
+      console.error('Socket connection error:', err);
+      setSocketConnected(false);
+      toast.error('实时数据连接失败，请检查网络');
+    };
+
+    socket.on('connect', onConnect);
+    socket.on('disconnect', onDisconnect);
+    socket.on('connect_error', onConnectError);
+
+    // 订阅设备数据
+    if (selectedDevice) {
+      socket.emit('subscribe_device', selectedDevice.id);
+    }
 
     return () => {
-      newSocket.close();
+      socket.off('connect', onConnect);
+      socket.off('disconnect', onDisconnect);
+      socket.off('connect_error', onConnectError);
+
+      if (selectedDevice) {
+        socket.emit('unsubscribe_device', selectedDevice.id);
+      }
     };
-  }, []);
+  }, [selectedDevice]);
 
   const getStatusColor = (status: DeviceStatus) => {
     if (status.alarm) return 'red';

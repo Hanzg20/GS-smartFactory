@@ -1,5 +1,5 @@
 import jwt from 'jsonwebtoken'
-import { supabase } from '../config/database.js'
+import supabase from '../config/database.js'
 
 // JWT密钥
 const JWT_SECRET = process.env.JWT_SECRET || 'smartfactory_jwt_secret_2024_dev'

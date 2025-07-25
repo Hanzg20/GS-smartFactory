@@ -107,6 +107,8 @@ export const useFocusTrap = () => {
 export const useHotkeys = (hotkeys: Record<string, () => void>) => {
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
+      if (!event.key) return; // 如果键值不存在，直接返回
+
       // 检查修饰键
       const hasCtrl = event.ctrlKey || event.metaKey;
       const hasShift = event.shiftKey;
@@ -117,7 +119,7 @@ export const useHotkeys = (hotkeys: Record<string, () => void>) => {
         hasCtrl && 'Ctrl',
         hasShift && 'Shift',
         hasAlt && 'Alt',
-        event.key.toUpperCase(),
+        event.key.toString().toUpperCase(), // 确保 key 是字符串
       ]
         .filter(Boolean)
         .join('+');

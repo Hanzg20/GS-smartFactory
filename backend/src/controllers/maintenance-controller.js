@@ -1,4 +1,4 @@
-import { supabase } from '../config/database.js'
+import supabase from '../config/database.js'
 import { io } from '../index.js'
 
 // 维护类型枚举

@@ -1,4 +1,4 @@
-import { supabase } from '../config/database.js'
+import supabase from '../config/database.js'
 
 // 获取设备列表
 export const getDevices = async (req, res) => {

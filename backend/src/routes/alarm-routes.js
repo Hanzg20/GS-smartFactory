@@ -8,12 +8,12 @@ import {
   getAlarmStats,
   bulkUpdateAlarms
 } from '../controllers/alarm-controller.js';
-import { authMiddleware } from '../middleware/auth.js';
+import { authenticateToken } from '../middleware/auth.js';
 
 const router = express.Router();
 
 // 应用认证中间件
-router.use(authMiddleware);
+router.use(authenticateToken);
 
 // 获取报警列表
 router.get('/', getAlarms);

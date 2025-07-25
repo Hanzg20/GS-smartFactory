@@ -17,37 +17,35 @@ dotenv.config()
 
 const app = express()
 const server = createServer(app)
+// Socket.io 配置
 const io = new Server(server, {
   cors: {
     origin: process.env.FRONTEND_URL || "http://localhost:3000",
     methods: ["GET", "POST"],
-    credentials: true
+    credentials: true,
+    allowedHeaders: ["Content-Type", "Authorization"]
   },
+  allowEIO3: true,
   pingTimeout: 60000,
   pingInterval: 25000,
   connectTimeout: 5000,
-  transports: ['websocket', 'polling']
-})
+  transports: ['websocket', 'polling'],
+  path: '/socket.io'
+});
 
 const PORT = process.env.PORT || 3001
 
 // 安全中间件
 app.use(helmet({
-  contentSecurityPolicy: {
-    directives: {
-      defaultSrc: ["'self'"],
-      styleSrc: ["'self'", "'unsafe-inline'"],
-      scriptSrc: ["'self'"],
-      imgSrc: ["'self'", "data:", "https:"],
-      connectSrc: ["'self'", "ws:", "wss:", process.env.FRONTEND_URL || "http://localhost:3000"]
-    },
-  },
+  contentSecurityPolicy: false
 }))
 
 // CORS配置
 app.use(cors({
   origin: process.env.FRONTEND_URL || 'http://localhost:3000',
-  credentials: true
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }))
 
 // 限流配置
@@ -85,79 +83,70 @@ app.get('/health', healthCheck)
 
 // WebSocket连接处理
 io.on('connection', (socket) => {
-  console.log('🔌 客户端连接:', socket.id)
+  console.log('�� 客户端连接:', socket.id);
 
   // 错误处理
   socket.on('error', (error) => {
-    console.error('Socket错误:', error)
-  })
+    console.error('Socket错误:', error);
+  });
 
   // 订阅设备实时数据
   socket.on('subscribe_device', (deviceId) => {
-    socket.join(`device_${deviceId}`)
-    console.log(`📡 订阅设备 ${deviceId} 的实时数据`)
+    socket.join(`device_${deviceId}`);
+    console.log(`📡 订阅设备 ${deviceId} 的实时数据`);
     
     // 发送初始数据
     io.to(`device_${deviceId}`).emit('device_data', {
       deviceId,
       timestamp: new Date().toISOString(),
-      status: 'online',
-      data: {
+      status: {
+        online: true,
+        running: Math.random() > 0.5,
+        alarm: false,
+        maintenance: false,
+        efficiency: Math.random() * 100,
         temperature: Math.random() * 50 + 20,
-        pressure: Math.random() * 5 + 1,
-        speed: Math.random() * 100
+        vibration: Math.random() * 10
       }
-    })
-  })
+    });
+  });
 
   // 取消订阅设备实时数据
   socket.on('unsubscribe_device', (deviceId) => {
-    socket.leave(`device_${deviceId}`)
-    console.log(`📡 取消订阅设备 ${deviceId} 的实时数据`)
-  })
-
-  // 订阅企业数据
-  socket.on('subscribe_enterprise', (enterpriseId) => {
-    socket.join(`enterprise_${enterpriseId}`)
-    console.log(`📡 订阅企业 ${enterpriseId} 的数据`)
-  })
-
-  // 设备控制命令
-  socket.on('device_command', (data) => {
-    const { deviceId, command, parameters } = data
-    console.log(`🎮 设备 ${deviceId} 收到命令:`, command, parameters)
-    
-    // 广播命令执行结果
-    io.to(`device_${deviceId}`).emit('command_result', {
-      deviceId,
-      command,
-      success: true,
-      timestamp: new Date().toISOString()
-    })
-  })
+    socket.leave(`device_${deviceId}`);
+    console.log(`📡 取消订阅设备 ${deviceId} 的实时数据`);
+  });
 
   // 断开连接
   socket.on('disconnect', () => {
-    console.log('🔌 客户端断开连接:', socket.id)
-  })
-})
+    console.log('🔌 客户端断开连接:', socket.id);
+  });
+
+  // 发送心跳包
+  socket.on('ping', () => {
+    socket.emit('pong', { time: new Date().toISOString() });
+  });
+});
 
 // 定时发送模拟数据
 setInterval(() => {
-  const devices = ['device1', 'device2', 'device3']
+  const devices = ['device1', 'device2', 'device3'];
   devices.forEach(deviceId => {
     io.to(`device_${deviceId}`).emit('device_data', {
       deviceId,
       timestamp: new Date().toISOString(),
-      status: 'online',
-      data: {
+      status: {
+        online: true,
+        running: Math.random() > 0.5,
+        alarm: false,
+        maintenance: false,
+        efficiency: Math.random() * 100,
         temperature: Math.random() * 50 + 20,
-        pressure: Math.random() * 5 + 1,
-        speed: Math.random() * 100
+        vibration: Math.random() * 10
       }
-    })
-  })
-}, 1000)
+    });
+  });
+}, 5000);
 
 // 全局错误处理
 app.use((err, req, res, next) => {
@@ -178,19 +167,18 @@ const startServer = async () => {
     const dbConnected = await testConnection()
     
     if (!dbConnected) {
-      console.error('❌ 数据库连接失败，服务器启动中止')
-      process.exit(1)
+      console.warn('⚠️  数据库连接失败，服务器将以离线模式启动')
+      console.warn('📝 部分功能可能无法正常工作，请配置正确的Supabase连接信息')
+    } else {
+      // 获取数据库统计信息
+      const stats = await getDatabaseStats()
+      console.log('📊 数据库统计信息:', stats)
     }
-
-    // 获取数据库统计信息
-    const stats = await getDatabaseStats()
-    console.log('📊 数据库统计信息:', stats)
 
     server.listen(PORT, () => {
       console.log('🚀 SmartFactory Studio 后端服务启动成功!')
       console.log(`📍 服务地址: http://localhost:${PORT}`)
-      console.log(`🔗 API文档: http://localhost:${PORT}/api/health`)
-      console.log(`📡 WebSocket: ws://localhost:${PORT}`)
+      console.log(`🔗 WebSocket: ws://localhost:${PORT}`)
       console.log(`⏰ 启动时间: ${new Date().toLocaleString('zh-CN')}`)
     })
   } catch (error) {

@@ -3,12 +3,12 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-const SUPABASE_URL = process.env.SUPABASE_URL;
-const SUPABASE_KEY = process.env.SUPABASE_KEY;
+const SUPABASE_URL = process.env.SUPABASE_URL || 'https://demo.supabase.co';
+const SUPABASE_KEY = process.env.SUPABASE_KEY || 'demo-key';
 
-if (!SUPABASE_URL || !SUPABASE_KEY) {
-  console.error('❌ 缺少Supabase配置');
-  process.exit(1);
+if (!SUPABASE_URL || !SUPABASE_KEY || SUPABASE_URL.includes('your-project') || SUPABASE_KEY.includes('your-')) {
+  console.warn('⚠️  使用演示Supabase配置 - 部分功能可能无法正常工作');
+  console.warn('请在.env文件中配置真实的SUPABASE_URL和SUPABASE_KEY');
 }
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY, {

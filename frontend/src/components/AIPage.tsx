@@ -1,11 +1,12 @@
 import React from 'react';
+import { ResponsiveContainer } from './base/ResponsiveContainer';
 import AIAnalysis from './AIAnalysis';
 
 const AIPage: React.FC = () => {
   return (
-    <div className="p-6">
+    <ResponsiveContainer maxWidth="2xl" className="p-6">
       <AIAnalysis />
-    </div>
+    </ResponsiveContainer>
   );
 };
 

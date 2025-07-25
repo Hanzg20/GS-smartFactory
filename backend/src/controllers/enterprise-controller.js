@@ -1,4 +1,4 @@
-import { supabase } from '../config/database.js'
+import supabase from '../config/database.js'
 
 // 获取企业列表
 export const getEnterprises = async (req, res) => {
