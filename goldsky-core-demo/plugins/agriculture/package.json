@@ -1,0 +1,25 @@
+{
+  "name": "@goldsky/agriculture-plugin",
+  "version": "1.0.0",
+  "description": "Smart Agriculture Plugin for Goldsky Platform",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "test": "jest"
+  },
+  "dependencies": {
+    "@goldsky/core": "^1.0.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "goldsky": {
+    "plugin": {
+      "id": "goldsky-agriculture",
+      "domain": "agriculture",
+      "version": "1.0.0"
+    }
+  }
+} 

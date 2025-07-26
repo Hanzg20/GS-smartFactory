@@ -1,0 +1,37 @@
+{
+  "name": "@goldsky/platform",
+  "version": "1.0.0",
+  "description": "Goldsky Core Platform - Universal Smart Application Development Framework",
+  "private": true,
+  "workspaces": [
+    "packages/*",
+    "plugins/*",
+    "examples/*"
+  ],
+  "scripts": {
+    "build": "turbo run build",
+    "dev": "turbo run dev --parallel",
+    "test": "turbo run test",
+    "lint": "turbo run lint",
+    "clean": "turbo run clean && rm -rf node_modules",
+    "publish": "turbo run build && changeset publish"
+  },
+  "devDependencies": {
+    "@changesets/cli": "^2.26.0",
+    "turbo": "^1.10.0",
+    "typescript": "^5.0.0",
+    "@types/node": "^20.0.0",
+    "eslint": "^8.40.0",
+    "prettier": "^2.8.0"
+  },
+  "engines": {
+    "node": ">=16.0.0",
+    "npm": ">=8.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/goldsky/platform"
+  },
+  "author": "Goldsky Team",
+  "license": "MIT"
+} 

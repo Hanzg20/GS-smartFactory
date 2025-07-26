@@ -1,0 +1,28 @@
+{
+  "name": "@goldsky/factory-plugin",
+  "version": "1.0.0",
+  "description": "Smart Factory Plugin for Goldsky Platform",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "test": "jest"
+  },
+  "dependencies": {
+    "@goldsky/core": "^1.0.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "peerDependencies": {
+    "react": ">=16.8.0"
+  },
+  "goldsky": {
+    "plugin": {
+      "id": "goldsky-factory",
+      "domain": "factory",
+      "version": "1.0.0"
+    }
+  }
+} 
